@@ -2,11 +2,11 @@ require_relative 'board.rb'
 
 module Enumerable
   def sum
-    inject &:+
+    inject(&:+)
   end
 
   def vector_add(other_arr)
-    zip(other_arr).collect &:sum
+    zip(other_arr).collect(&:sum)
   end
 end
 
@@ -85,7 +85,7 @@ class Piece
     moveset.each do |vector|
       vector = vector.map { |i| i * move_dir } unless king?
       new_pos = pos.vector_add(vector)
-      moves << new_pos if !board.occupied?(new_pos)
+      moves << new_pos if board.in_bounds?(new_pos) && !board.occupied?(new_pos)
     end
 
     moves
@@ -99,12 +99,25 @@ class Piece
       new_pos = pos.vector_add(vector.map { |i| i * 2 })
       captured_pos = captured_pos(pos, new_pos)
 
-      if !board.occupied?(new_pos) && board.capturable?(captured_pos, color)
+      if board.in_bounds?(new_pos) && !board.occupied?(new_pos) &&
+        board.capturable?(captured_pos, color)
         moves << new_pos
       end
     end
 
     moves
+  end
+
+  def valid_move_seq?(move_arr, display_error = true)
+    board_copy = board.dup
+    begin
+      board_copy[pos].perform_moves!(move_arr)
+    rescue BadMoveError => e
+      puts e.message if display_error
+      return false
+    else
+      return true
+    end
   end
 
   def king?
@@ -134,18 +147,6 @@ class Piece
 
   def move_dir
     color == :d ? +1 : -1
-  end
-
-  def valid_move_seq?(move_arr)
-    board_copy = board.dup
-    begin
-      board_copy[pos].perform_moves!(move_arr)
-    rescue BadMoveError => e
-      puts e.message
-      return false
-    else
-      return true
-    end
   end
 
   def captured_pos(old_pos, new_pos)

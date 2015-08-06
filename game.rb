@@ -1,5 +1,6 @@
 require_relative 'board.rb'
 require_relative 'piece.rb'
+require 'byebug'
 
 class Game
   attr_reader :player1, :player2, :board
@@ -8,8 +9,8 @@ class Game
   def initialize
     @current_player = player2
     @board = Board.new
-    @player1 = HumanPlayer.new(:d, @board)
-    @player2 = HumanPlayer.new(:l, @board)
+    @player1 = ComputerPlayer.new(:d, @board)
+    @player2 = ComputerPlayer.new(:l, @board)
   end
 
   def play
@@ -24,6 +25,8 @@ class Game
         puts e.message
         retry
       end
+      puts "#{pos} => #{moves}"
+      sleep(1)
       system("clear")
     end
     board.render
@@ -75,14 +78,43 @@ class HumanPlayer
   end
 end
 
-def ComputerPlayer
+class ComputerPlayer
+  attr_reader :color, :board
+
   def initialize(color, board)
     @color = color
     @board = board
   end
 
   def prompt
+    pieces = board.all_pieces.select { |piece| piece.color == color }
+    moves = []
+    possible_moves = {}
 
+    pieces.each do |piece|
+      if !piece.jump_moves.empty?
+        pos = piece.pos
+        move = piece.jump_moves.sample
+
+        test_pos = pos
+        b = board.dup
+        begin
+          moves << move
+          b[test_pos].perform_moves!([move])
+          test_pos = move
+          move = b[test_pos].jump_moves.sample
+        end while b[test_pos].valid_move_seq?([move], false)
+
+        return [pos, moves]
+      elsif !piece.slide_moves.empty?
+        possible_moves[piece.pos] = piece.slide_moves
+      end
+    end
+
+    pos = possible_moves.keys.sample
+    move = [possible_moves[pos].sample]
+
+    [pos, move]
   end
 
 end
