@@ -27,4 +27,11 @@ if __FILE__ == $PROGRAM_NAME
   p e.king?
   e.perform_slide([6,6])
   p e.sliding_moves
+  b.render
+
+  x = b.dup
+  x.render
+  x[[6, 6]].perform_slide([5, 7])
+  x.render
+  b.render
 end

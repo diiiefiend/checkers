@@ -22,7 +22,12 @@ class Board
   end
 
   def dup
-    #...
+    board_copy = Board.new(false)
+    all_pieces.each do |piece|
+      Piece.new(piece.color, piece.pos, board_copy, piece.king?)
+    end
+
+    board_copy
   end
 
   def render
@@ -55,6 +60,10 @@ class Board
 
   def populate_grid
     #...
+  end
+
+  def all_pieces
+    grid.flatten.compact
   end
 
 end

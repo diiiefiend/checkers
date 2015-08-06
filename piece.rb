@@ -25,12 +25,14 @@ class Piece
   PIECE_IMG = ["\u25CF", "\u25CB", "\u265B", "\u2655"]
 
   attr_reader :color, :board
+  attr_reader :pos
 
-  def initialize(color, pos, board)
+  def initialize(color, pos, board, king = false)
     @color = color            #values: light and dark, :l & :d
     @pos = pos
     @board = board
-    @king = false
+    board[pos] = self
+    @king = king
   end
 
   def perform_slide(end_pos)
@@ -54,7 +56,25 @@ class Piece
     true
   end
 
+  def perform_moves(move_arr)
+    raise InvalidMoveError.new("NO CAN DO") unless valid_move_seq?(move_arr)
+    perform_moves!(move_arr)
+  end
+
   def perform_moves!(move_arr)
+    if move_arr.length == 1
+      move = move_arr[0]
+      unless sliding_moves.include?(move) || jumping_moves.include?(move)
+        raise InvalidMoveError.new("STOP THAT")
+      end
+      move(move)
+    else
+      move_arr.each do |move|
+        raise InvalidMoveError.new("NOPE") unless jumping_moves.include?(move)
+        move(move)
+      end
+    end
+  end
 
   def move(end_pos)
     board[pos] = nil
@@ -90,6 +110,18 @@ class Piece
     moves
   end
 
+  def valid_move_seq?(move_arr)
+    board_copy = board.dup
+    begin
+      perform_moves!(move_arr)
+    rescue InvalidMoveError => e
+      puts e.message
+      return false
+    else
+      return true
+    end
+  end
+
   def king?
     @king
   end
@@ -109,8 +141,7 @@ class Piece
 
   private
   attr_reader :move_dir
-  attr_accessor :pos
-  attr_writer :king
+  attr_writer :king, :pos
 
   def moveset
     king? ? PAWN_DELTAS + KING_DELTAS : PAWN_DELTAS
@@ -131,4 +162,7 @@ class Piece
     color == :d ? pos[0] == 7 : pos[0] == 0
   end
 
+end
+
+class InvalidMoveError < StandardError
 end
