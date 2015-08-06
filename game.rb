@@ -88,24 +88,11 @@ class ComputerPlayer
 
   def prompt
     pieces = board.all_pieces.select { |piece| piece.color == color }
-    moves = []
     possible_moves = {}
 
     pieces.each do |piece|
       if !piece.jump_moves.empty?
-        pos = piece.pos
-        move = piece.jump_moves.sample
-
-        test_pos = pos
-        b = board.dup
-        begin
-          moves << move
-          b[test_pos].perform_moves!([move])
-          test_pos = move
-          move = b[test_pos].jump_moves.sample
-        end while b[test_pos].valid_move_seq?([move], false)
-
-        return [pos, moves]
+        return chain_jump(piece.pos, piece.jump_moves.sample)
       elsif !piece.slide_moves.empty?
         possible_moves[piece.pos] = piece.slide_moves
       end
@@ -117,6 +104,25 @@ class ComputerPlayer
     [pos, move]
   end
 
+  def to_s
+    color.to_s.upcase
+  end
+
+  private
+  def chain_jump(start_pos, move)
+    moves = []
+
+    test_pos = start_pos
+    b = board.dup
+    begin
+      moves << move
+      b[test_pos].perform_moves!([move])
+      test_pos = move
+      move = b[test_pos].jump_moves.sample
+    end while b[test_pos].valid_move_seq?([move], false)
+
+    [start_pos, moves]
+  end
 end
 
 class NoPieceError < StandardError
