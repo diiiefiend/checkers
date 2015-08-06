@@ -36,7 +36,7 @@ class Piece
   end
 
   def perform_slide(end_pos)
-    return false unless sliding_moves.include?(end_pos)
+    return false unless slide_moves.include?(end_pos)
 
     move(end_pos)
     self.king = true if promote?
@@ -45,7 +45,7 @@ class Piece
   end
 
   def perform_jump(end_pos)
-    moves = jumping_moves
+    moves = jump_moves
     return false unless moves.include?(end_pos)
 
     old_pos = pos
@@ -57,21 +57,19 @@ class Piece
   end
 
   def perform_moves(move_arr)
-    raise InvalidMoveError.new("NO CAN DO") unless valid_move_seq?(move_arr)
+    raise BadMoveError.new("NO CAN DO") unless valid_move_seq?(move_arr)
     perform_moves!(move_arr)
   end
 
   def perform_moves!(move_arr)
     if move_arr.length == 1
       move = move_arr[0]
-      unless sliding_moves.include?(move) || jumping_moves.include?(move)
-        raise InvalidMoveError.new("STOP THAT")
+      unless perform_slide(move) || perform_jump(move)
+        raise BadMoveError.new("INVALID MOVE")
       end
-      move(move)
     else
       move_arr.each do |move|
-        raise InvalidMoveError.new("NOPE") unless jumping_moves.include?(move)
-        move(move)
+        raise BadMoveError.new("INVALID JUMP") unless perform_jump(move)
       end
     end
   end
@@ -82,7 +80,7 @@ class Piece
     board[pos] = self
   end
 
-  def sliding_moves
+  def slide_moves
     moves = []
 
     moveset.each do |vector|
@@ -94,7 +92,7 @@ class Piece
     moves
   end
 
-  def jumping_moves
+  def jump_moves
     moves = []
 
     moveset.each do |vector|
@@ -108,18 +106,6 @@ class Piece
     end
 
     moves
-  end
-
-  def valid_move_seq?(move_arr)
-    board_copy = board.dup
-    begin
-      perform_moves!(move_arr)
-    rescue InvalidMoveError => e
-      puts e.message
-      return false
-    else
-      return true
-    end
   end
 
   def king?
@@ -151,6 +137,18 @@ class Piece
     color == :d ? +1 : -1
   end
 
+  def valid_move_seq?(move_arr)
+    board_copy = board.dup
+    begin
+      board_copy[pos].perform_moves!(move_arr)
+    rescue BadMoveError => e
+      puts e.message
+      return false
+    else
+      return true
+    end
+  end
+
   def captured_pos(old_pos, new_pos)
     x_arr = [old_pos[0], new_pos[0]]
     y_arr = [old_pos[1], new_pos[1]]
@@ -164,5 +162,5 @@ class Piece
 
 end
 
-class InvalidMoveError < StandardError
+class BadMoveError < StandardError
 end

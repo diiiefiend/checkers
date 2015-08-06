@@ -30,12 +30,16 @@ class Board
     board_copy
   end
 
+  def all_pieces
+    grid.flatten.compact
+  end
+
   def render
     puts "   0 1 2 3 4 5 6 7"
     grid.each_with_index do |row, idx|
       print "#{idx}: "
       row.each_with_index do |tile, idy|
-        bg_color = ((idx + idy).even? ? :light_white : :gray)
+        bg_color = ((idx + idy).even? ? :gray : :light_white)
         output = tile.nil? ? "  " : tile.to_s
         print output.colorize(:background => bg_color)
       end
@@ -59,11 +63,14 @@ class Board
   private
 
   def populate_grid
-    #...
-  end
+    dark_rows = (0..2).to_a
+    light_rows = (5..7).to_a
 
-  def all_pieces
-    grid.flatten.compact
+    (dark_rows + light_rows).each_with_index do |row, idx|
+      color = (dark_rows.include?(row) ? :d : :l)
+      0.upto(BOARD_SIZE-1) do |col|
+        Piece.new(color, [row, col], self) if (idx + col).odd?
+      end
+    end
   end
-
 end
