@@ -12,7 +12,7 @@ class Piece
     [+1, +1]
   ]
 
-  attr_reader :color, :king, :pos, :board, :move_dir
+  attr_reader :color, :board, :move_dir
 
   def initialize(color, pos, board)
     @color = color            #light and dark, :l & :d
@@ -23,19 +23,25 @@ class Piece
   end
 
   def perform_slide(end_pos)
+    return false unless sliding_moves.include?(end_pos)
 
+    board[pos] = nil
+    self.pos = end_pos
+    board[pos] = self
+
+    true
   end
 
   def perform_jump(end_pos)
   end
 
-  def moves
+  def sliding_moves
     x, y = pos
     moves = []
 
     moveset.each do |vector|
       new_pos = [x + vector[0], y + vector[1]].map { |i| i * move_dir }
-      moves << new_pos if board.in_bounds?(new_pos)
+      moves << new_pos if board.in_bounds?(new_pos) && !board.occupied?(new_pos)
     end
 
     moves
@@ -54,6 +60,8 @@ class Piece
   end
 
   private
+
+  attr_accessor :pos, :king
 
   def moveset
     king? ? PAWN_DELTAS + KING_DELTAS : PAWN_DELTAS

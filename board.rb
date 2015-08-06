@@ -10,11 +10,13 @@ class Board
     populate_grid if fill_grid
   end
 
-  def [](x, y)
+  def [](pos)
+    x, y = pos
     grid[x][y]
   end
 
-  def []=(x, y, piece)
+  def []=(pos, piece)
+    x, y = pos
     grid[x][y] = piece
   end
 
@@ -25,6 +27,7 @@ class Board
   end
 
   def occupied?(pos)
+    !self[pos].nil?
   end
 
   def in_bounds?(pos)
