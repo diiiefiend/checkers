@@ -1,4 +1,5 @@
 require_relative 'board.rb'
+require 'byebug'
 
 class Piece
   PAWN_DELTAS = [
@@ -18,13 +19,14 @@ class Piece
     @pos = pos
     @board = board
     @king = false
-    color == :d ? @move_dir = +1 : @move_dir = -1
+    color == :d ? @move_dir = -1 : @move_dir = +1
   end
 
-  def perform_slide
+  def perform_slide(end_pos)
+
   end
 
-  def perform_jump
+  def perform_jump(end_pos)
   end
 
   def moves
@@ -40,9 +42,15 @@ class Piece
   end
 
   def promote?
+    color == :d ? pos[0] == 7 : pos[0] == 0
   end
 
   def to_s
+    color == :d ? "D" : "L"
+  end
+
+  def inspect
+    to_s + " @ #{pos}"
   end
 
   private
