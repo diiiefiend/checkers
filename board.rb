@@ -28,6 +28,7 @@ class Board
   end
 
   def in_bounds?(pos)
+    pos.all? { |i| i.between?(0, BOARD_SIZE - 1) }
   end
 
   private
