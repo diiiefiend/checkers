@@ -24,10 +24,23 @@ class Board
   end
 
   def render
+    puts "   0 1 2 3 4 5 6 7"
+    grid.each_with_index do |row, idx|
+      print "#{idx}: "
+      row.each do |tile|
+        print tile.nil? ? "_|" : tile.to_s
+      end
+      print "\n"
+    end
+    puts "\n\n"
   end
 
   def occupied?(pos)
     !self[pos].nil?
+  end
+
+  def capturable?(pos, color)
+    occupied?(pos) && self[pos].color != color
   end
 
   def in_bounds?(pos)
