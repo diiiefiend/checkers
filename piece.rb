@@ -1,4 +1,13 @@
+require_relative 'board.rb'
+
 class Piece
+  MOVE_DELTAS = [
+    [-1, -1],
+    [-1, +1],
+    [+1, -1],
+    [+1, +1]
+  ]
+
   attr_reader :color, :king, :pos, :board
 
   def initialize(color, pos, board)
@@ -18,6 +27,9 @@ class Piece
   end
 
   def promote?
+  end
+
+  def to_s
   end
 
 end
