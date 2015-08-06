@@ -18,8 +18,8 @@ class Game
       board.render
       switch_players
       begin
-        piece, moves = current_player.prompt
-        board[piece].perform_moves(moves)
+        pos, moves = current_player.prompt
+        board[pos].perform_moves(moves)
       rescue StandardError, BadMoveError => e
         puts e.message
         retry
@@ -42,7 +42,6 @@ class Game
     pieces = board.all_pieces
     pieces.all? { |piece| piece.color == pieces[0].color }
   end
-
 end
 
 class HumanPlayer
@@ -57,23 +56,35 @@ class HumanPlayer
     moves = []
 
     puts "#{to_s}: Which piece to move? like so: 0,0"
-    piece = gets.chomp.split(",").map { |i| Integer(i) }
+    pos = gets.chomp.split(",").map { |i| Integer(i) }
 
-    raise WrongInputError.new("FOLLOW THE FORMAT") if piece.length != 2
-    raise NoPieceError.new("NO PIECE THERE") if !board.in_bounds?(piece) ||
-      board[piece].nil?
-    raise NotYourColorError.new("NOT YOUR COLOR") if board[piece].color != color
+    raise WrongInputError.new("FOLLOW THE FORMAT") if pos.length != 2
+    raise NoPieceError.new("NO PIECE THERE") if !board.in_bounds?(pos) ||
+      board[pos].nil?
+    raise NotYourColorError.new("NOT YOUR COLOR") if board[pos].color != color
 
     puts "#{to_s}: Input move sequence, ie 1,2; 2,3"
     moves_str = gets.chomp.split("; ")
     moves_str.each { |move| moves << move.split(",").map(&:to_i) }
 
-    [piece, moves]
+    [pos, moves]
   end
 
   def to_s
     color.to_s.upcase
   end
+end
+
+def ComputerPlayer
+  def initialize(color, board)
+    @color = color
+    @board = board
+  end
+
+  def prompt
+
+  end
+
 end
 
 class NoPieceError < StandardError

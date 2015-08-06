@@ -1,5 +1,4 @@
 require_relative 'board.rb'
-require 'byebug'
 
 module Enumerable
   def sum
