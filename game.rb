@@ -25,4 +25,6 @@ if __FILE__ == $PROGRAM_NAME
   e.perform_slide([7, 7])
   b.render
   p e.king?
+  e.perform_slide([6,6])
+  p e.sliding_moves
 end

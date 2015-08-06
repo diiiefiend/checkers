@@ -1,4 +1,5 @@
 require_relative 'piece.rb'
+require 'colorize'
 
 class Board
   BOARD_SIZE = 8
@@ -21,14 +22,17 @@ class Board
   end
 
   def dup
+    #...
   end
 
   def render
     puts "   0 1 2 3 4 5 6 7"
     grid.each_with_index do |row, idx|
       print "#{idx}: "
-      row.each do |tile|
-        print tile.nil? ? "_|" : tile.to_s
+      row.each_with_index do |tile, idy|
+        bg_color = ((idx + idy).even? ? :light_white : :gray)
+        output = tile.nil? ? "  " : tile.to_s
+        print output.colorize(:background => bg_color)
       end
       print "\n"
     end
@@ -36,7 +40,7 @@ class Board
   end
 
   def occupied?(pos)
-    !self[pos].nil?
+    in_bounds?(pos) && !self[pos].nil?
   end
 
   def capturable?(pos, color)
@@ -50,6 +54,7 @@ class Board
   private
 
   def populate_grid
+    #...
   end
 
 end

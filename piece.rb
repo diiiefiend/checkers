@@ -18,9 +18,11 @@ class Piece
   ]
 
   KING_DELTAS = [
-    [+1, -1],
-    [+1, +1]
+    [-1, -1],
+    [-1, +1]
   ]
+
+  PIECE_IMG = ["\u25CF", "\u25CB", "\u265B", "\u2655"]
 
   attr_reader :color, :board
 
@@ -29,7 +31,6 @@ class Piece
     @pos = pos
     @board = board
     @king = false
-    color == :d ? @move_dir = +1 : @move_dir = -1
   end
 
   def perform_slide(end_pos)
@@ -42,16 +43,18 @@ class Piece
   end
 
   def perform_jump(end_pos)
-    moves, captured = jumping_moves
+    moves = jumping_moves
     return false unless moves.include?(end_pos)
 
+    old_pos = pos
     move(end_pos)
     self.king = true if promote?
-    idx = moves.find_index(end_pos)
-    board[captured[idx]] = nil
+    board[captured_pos(old_pos, end_pos)] = nil
 
     true
   end
+
+  def perform_moves!(move_arr)
 
   def move(end_pos)
     board[pos] = nil
@@ -63,9 +66,9 @@ class Piece
     moves = []
 
     moveset.each do |vector|
-      vector = vector.map { |i| i * move_dir }
+      vector = vector.map { |i| i * move_dir } unless king?
       new_pos = pos.vector_add(vector)
-      moves << new_pos if board.in_bounds?(new_pos) && !board.occupied?(new_pos)
+      moves << new_pos if !board.occupied?(new_pos)
     end
 
     moves
@@ -73,38 +76,31 @@ class Piece
 
   def jumping_moves
     moves = []
-    captured_pieces = []
 
     moveset.each do |vector|
-      vector = vector.map { |i| i * move_dir }
-      captured_pos = pos.vector_add(vector)
+      vector = vector.map { |i| i * move_dir } unless king?
       new_pos = pos.vector_add(vector.map { |i| i * 2 })
+      captured_pos = captured_pos(pos, new_pos)
 
-      if board.in_bounds?(new_pos) && board.capturable?(captured_pos, color) &&
-        !board.occupied?(new_pos)
-
+      if !board.occupied?(new_pos) && board.capturable?(captured_pos, color)
         moves << new_pos
-        captured_pieces << captured_pos
       end
     end
 
-    [moves, captured_pieces]
-  end
-
-  def promote?
-    color == :d ? pos[0] == 7 : pos[0] == 0
+    moves
   end
 
   def king?
-    king
+    @king
   end
 
   def to_s
     if king?
-      color == :d ? "K|" : "k|"
+      img = (color == :d ? PIECE_IMG[2] : PIECE_IMG[3])
     else
-      color == :d ? "D|" : "L|"
+      img = (color == :d ? PIECE_IMG[0] : PIECE_IMG[1])
     end
+    img.encode('utf-8') + " "
   end
 
   def inspect
@@ -113,10 +109,26 @@ class Piece
 
   private
   attr_reader :move_dir
-  attr_accessor :pos, :king
+  attr_accessor :pos
+  attr_writer :king
 
   def moveset
     king? ? PAWN_DELTAS + KING_DELTAS : PAWN_DELTAS
+  end
+
+  def move_dir
+    color == :d ? +1 : -1
+  end
+
+  def captured_pos(old_pos, new_pos)
+    x_arr = [old_pos[0], new_pos[0]]
+    y_arr = [old_pos[1], new_pos[1]]
+
+    [x_arr.max - 1, y_arr.max - 1]
+  end
+
+  def promote?
+    color == :d ? pos[0] == 7 : pos[0] == 0
   end
 
 end
